@@ -249,6 +249,8 @@ type TxPool struct {
 	all     *txLookup                    // All transactions to allow lookups
 	priced  *txPricedList                // All transactions sorted by price
 
+	bundles []sealingBundle // bundle of tx to seal in front of other tx. should only contain local senders
+
 	chainHeadCh     chan ChainHeadEvent
 	chainHeadSub    event.Subscription
 	reqResetCh      chan *txpoolResetRequest
@@ -498,6 +500,44 @@ func (pool *TxPool) Pending() (map[common.Address]types.Transactions, error) {
 	}
 	return pending, nil
 }
+
+func (pool *TxPool) SealingBundles(blockNumber *big.Int) ([]types.Transactions, error) {
+	pool.mu.Lock()
+	defer pool.mu.Unlock()
+
+	// returned values
+	var txBundles []types.Transactions
+	// rolled over values
+	var bundles []sealingBundle
+
+	for _, bundle := range pool.bundles {
+		if (blockNumber.Cmp(bundle.deadline) > 0) {
+			log.Info("Removed bundle from memory","currentBlock",blockNumber,"deadline",bundle.deadline)
+			continue
+		}
+		// return the ones which are before their deadlines
+		txBundles = append(txBundles, bundle.txList)
+		// keep the bundles around internally until they need to be pruned
+		bundles = append(bundles, bundle)
+	}
+
+	pool.bundles = bundles
+	return txBundles, nil
+}
+
+func (pool *TxPool) AddBundle(txs types.Transactions, deadline *big.Int) error {
+	pool.mu.Lock()
+	defer pool.mu.Unlock()
+
+	log.Info("Added bundle to pool","count",len(txs))
+
+	pool.bundles = append(pool.bundles, sealingBundle{
+		txList:          txs,
+		deadline:  	deadline,
+	})
+	return nil
+}
+
 
 // Locals retrieves the accounts currently considered local by the pool.
 func (pool *TxPool) Locals() []common.Address {
