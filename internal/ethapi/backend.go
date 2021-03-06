@@ -73,6 +73,7 @@ type Backend interface {
 	Stats() (pending int, queued int)
 	TxPoolContent() (map[common.Address]types.Transactions, map[common.Address]types.Transactions)
 	SubscribeNewTxsEvent(chan<- core.NewTxsEvent) event.Subscription
+	SendBundle(ctx context.Context, txs types.Transactions, deadline rpc.BlockNumber) error
 
 	// Filter API
 	BloomStatus() (uint64, uint64)
@@ -128,6 +129,11 @@ func GetAPIs(apiBackend Backend) []rpc.API {
 			Version:   "1.0",
 			Service:   NewPrivateAccountAPI(apiBackend, nonceLock),
 			Public:    false,
+		}, {
+			Namespace: "eth",
+			Version:   "1.0",
+			Service:   NewPrivateTxBundleAPI(apiBackend),
+			Public:    true,
 		},
 	}
 }

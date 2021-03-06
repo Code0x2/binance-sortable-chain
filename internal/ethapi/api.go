@@ -1818,3 +1818,28 @@ func (s *PublicNetAPI) PeerCount() hexutil.Uint {
 func (s *PublicNetAPI) Version() string {
 	return fmt.Sprintf("%d", s.networkVersion)
 }
+
+type PrivateTxBundleAPI struct {
+	b Backend
+}
+
+// NewPrivateTxBundleAPI creates a new Tx Bundle API instance.
+func NewPrivateTxBundleAPI(b Backend) *PrivateTxBundleAPI {
+	return &PrivateTxBundleAPI{b}
+}
+
+// SendBundle will add the signed transaction to the transaction pool.
+// The sender is responsible for signing the transaction and using the correct nonce and ensuring validity
+func (s *PrivateTxBundleAPI) SendBundle(ctx context.Context, encodedTxs []hexutil.Bytes, deadline rpc.BlockNumber) error {
+	var txs types.Transactions
+
+	for _, encodedTx := range encodedTxs {
+		tx := new(types.Transaction)
+		if err := rlp.DecodeBytes(encodedTx, tx); err != nil {
+			return err
+		}
+		txs = append(txs, tx)
+	}
+
+	return s.b.SendBundle(ctx, txs, deadline)
+}
