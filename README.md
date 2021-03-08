@@ -1,8 +1,8 @@
 ## Binance sortable chain
-Binance sortable chain is a bsc-geth fork allowing for bundled sorting of validated transactions.
+Binance sortable chain is a bsc-geth fork allowing for bundled sorting of validated transactions aiming to add additional revenue to the validator operator. Optimized to work best with ExVN
 
 ### Using binance sortable chain for your validator?
-pm me on telegram [@code0x2](https://t.me/code0x2) if you want profit maximalizing tx's sent to you
+pm me on telegram [@code0x2](https://t.me/code0x2) if you want profit maximalizing tx's sent to you, and for a deal ;)
 
 ### Whats new in sortable chain bsc-geth?
 - BSC-Geth's tx pool now has a seperate memory slot for storing `sealingBundles` (commit [b9993614eafadfcdd983bcd99adedc9bddb922b1](https://github.com/Code0x2/binance-sortable-chain/commit/b9993614eafadfcdd983bcd99adedc9bddb922b1))
